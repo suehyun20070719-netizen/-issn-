@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="헬스 복용량"/>
+<link rel="apple-touch-icon" href="icon.png.png"/>
+<title>헬스 복용량</title>
+<style>
+:root{--fg:#262626;--muted:#8e8e8e;--line:#dbdbdb;--accent:#262626;--veil:rgba(255,255,255,.78);--shot:none}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;background:#fff;color:var(--fg)}
+.wrap{max-width:470px;margin:0 auto;min-height:100dvh;padding:14px 16px 32px}
+h1{font-size:22px;font-weight:650}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 14px;text-align:center;line-height:1.45}
+.tabs{display:flex;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;padding:8px 0 10px;border:0;background:none;color:var(--muted);font:inherit;font-weight:600;position:relative}
+.tabs button.on{color:var(--fg)}
+.tabs button.on:after{content:"";position:absolute;left:18%;right:18%;bottom:0;height:2px;background:var(--fg)}
+.card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px;background:#fff var(--shot) center/cover no-repeat;position:relative;overflow:hidden}
+.card:before{content:"";position:absolute;inset:0;background:var(--veil);pointer-events:none}
+.card>*{position:relative;z-index:1}
+.label{font-size:12px;color:var(--muted);font-weight:600;margin:10px 0 6px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+input,select,textarea{width:100%;background:#fff;border:1px solid var(--line);border-radius:8px;padding:11px 12px;color:var(--fg);font:inherit}
+.go{width:100%;margin-top:12px;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:15px}
+.out{display:none;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.big{font-size:28px;font-weight:700}
+.note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6}
+.warn{margin:14px 0 0;padding:10px 12px;border-radius:8px;background:#fff0f1;color:#ed4956;font-size:12px;line-height:1.4;font-weight:700}
+.hide{display:none!important}
+.menu-item{width:100%;text-align:left;padding:16px 8px;border:0;border-bottom:1px solid #f0f0f0;background:none;color:var(--fg);font:inherit;font-size:16px;font-weight:600}
+.back{border:0;background:none;color:var(--fg);font:inherit;font-weight:600;padding:0 0 10px}
+.tip h3{font-size:15px;margin:14px 0 6px}
+.tip p{font-size:13px;color:var(--muted);line-height:1.65;margin:0 0 8px}
+.theme-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0}
+.theme-row span{font-size:14px;font-weight:600}
+.swatch{width:36px;height:36px;border-radius:8px;border:1px solid var(--line);overflow:hidden;flex:0 0 36px}
+.swatch input[type=color]{width:48px;height:48px;border:0;padding:0;transform:translate(-6px,-6px);cursor:pointer}
+.topbar{display:flex;align-items:center;position:relative;min-height:36px}
+.topbar h1{position:absolute;left:0;right:0;text-align:center;pointer-events:none;font-size:22px}
+.topbar .ico{width:40px;height:36px;flex:0 0 40px;border:0;background:none;font-size:22px;color:var(--fg);z-index:1}
+.topbar .ico:last-child{margin-left:auto;font-size:20px}
+.bag p{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
+.bag button{border:0;background:none;color:#ed4956;font:inherit}
+#splash{position:fixed;inset:0;background:#fff;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+#splash h2{font-size:32px;color:#111}
+#splash p{color:#8e8e8e;margin:10px 0 28px;font-size:14px;line-height:1.5}
+#splash .go{max-width:280px;background:#111;color:#fff}
+#dim{display:none;position:fixed;inset:0;z-index:40;background:rgba(255,255,255,.28);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#dim.on{display:block}
+#menu-box{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;margin:0!important;border-radius:0 16px 16px 0;z-index:45;overflow:auto;background:#fff}
+</style>
+</head>
+<body>
+<div id="splash"><h2>Gym Dose</h2><p>protein · creatine · booster<br>헬스 복용량 추정</p><button class="go" type="button" onclick="startApp()">시작하기</button></div>
+<div id="dim" onclick="closeMenu()"></div>
+<div class="wrap">
+<div class="topbar">
+<button type="button" id="menu" class="ico">☰</button>
+<h1>헬스 복용량</h1>
+<button type="button" class="ico" onclick="openMenu();openPane('help')">?</button>
+</div>
+<p class="sub">프로틴 · 크레아틴 · 부스터. 추정치이며 진료용이 아닙니다.</p>
+<div id="menu-box" class="card hide">
+<div id="menu-list">
+<button class="menu-item" type="button" onclick="openPane('help')">사용 방법</button>
+<button class="menu-item" type="button" onclick="openPane('hist')">기록</button>
+<button class="menu-item" type="button" onclick="openPane('theme')">꾸미기</button>
+<button class="menu-item" type="button" onclick="openPane('tip')">섭취 도움</button>
+</div>
+<div id="pane-help" class="hide tip">
+<button class="back" type="button" onclick="backMenu()">← 메뉴</button>
+<h3>사용 방법</h3>
+<p><b>1.</b> 성별·목적·키·체중을 적습니다. 골격근·체수분은 있으면 더 맞습니다.</p>
+<p><b>2.</b> 탭에서 프로틴/크레아틴/부스터를 고릅니다. 검색은 그 탭 제품만 나옵니다.</p>
+<p><b>3.</b> 제품을 누르면 한 스쿱 기준만 채워집니다. 스쿱 수는 직접 적습니다.</p>
+<p><b>4.</b> <b>목록에 추가</b>를 눌러야 들어갑니다. 여러 제품을 쌓을 수 있습니다.</p>
+<p><b>5.</b> <b>권장량과 비교</b>를 누르면 이론 권장과 지금 목록을 같이 봅니다.</p>
+</div>
+<div id="pane-hist" class="hide tip"><button class="back" type="button" onclick="backMenu()">← 메뉴</button><h3>기록</h3><div id="hist-list"></div><button class="go" type="button" onclick="clearHist()">기록 지우기</button></div>
+<div id="pane-theme" class="hide"><button class="back" type="button" onclick="backMenu()">← 메뉴</button>
+<div class="theme-row"><span>글자색</span><label class="swatch"><input id="opt-fg" type="color" value="#262626"/></label></div>
+<div class="theme-row"><span>버튼색</span><label class="swatch"><input id="opt-accent" type="color" value="#262626"/></label></div>
+<div class="label">투명도</div><input id="opt-veil" type="range" min="30" max="95" value="78"/>
+<div class="label">배경 사진</div><input id="opt-img" type="file" accept="image/*"/>
+<button class="go" type="button" onclick="resetTheme()">초기화</button></div>
+<div id="pane-tip" class="hide tip">
+<button class="back" type="button" onclick="backMenu()">← 메뉴</button>
+<h3>섭취 도움</h3>
+<p>프로틴은 하루 3~4번으로 나누는 편이 낫습니다. 운동 후 한 스쿱은 흔히 쓰는 방법이지 필수는 아닙니다.</p>
+<p>크레아틴은 매일 같은 양이 중요합니다. 로딩은 선택이니다. 물과 같이 드세요.</p>
+<p>부스터는 카페인입니다. 커피·에너지드링크와 합치면 심장이 부담될 수 있습니다. 잠들기 6시간 전에는 피하세요.</p>
+</div>
+</div>
+<div class="tabs">
+<button class="on" data-t="prot">프로틴</button>
+<button data-t="crea">크레아틴</button>
+<button data-t="boost">부스터</button>
+</div>
+<div class="card"><div class="label">제품 찾기</div>
+<div class="row"><input id="p-q" placeholder="이 탭 제품만 검색"/><button class="go" type="button" style="margin-top:0;flex:0 0 72px" onclick="findProd()">검색</button></div>
+<div id="p-list"></div>
+</div>
+<div class="card"><div class="label">공통</div>
+<div class="row"><select id="sex"><option value="m">남성</option><option value="f">여성</option></select>
+<select id="goal"><option value="bulk">벌크</option><option value="keep" selected>유지</option><option value="cut">감량</option></select></div>
+<div class="row" style="margin-top:8px"><input id="height" type="number" placeholder="키 cm"/><input id="weight" type="number" placeholder="체중 kg"/></div>
+<div class="row" style="margin-top:8px"><input id="smm" type="number" placeholder="골격근 kg"/><input id="tbw" type="number" placeholder="체수분 %"/></div>
+</div>
+<div id="p-prot"><div class="card"><div class="label">프로틴</div>
+<select id="prot-sel"></select>
+<div class="row" style="margin-top:8px"><input id="prot-g" type="number" placeholder="한 스쿱 단백질 g"/><input id="prot-n" type="number" placeholder="스쿱 수"/></div>
+<button class="go" type="button" onclick="addBag()">목록에 추가</button>
+<div class="bag" id="bag-prot"></div>
+<button class="go" type="button" onclick="calc()">권장량과 비교</button>
+<div class="out" id="o-prot"><div class="big" id="prot-big"></div><p class="note" id="prot-note"></p></div>
+</div></div>
+<div id="p-crea" class="hide"><div class="card"><div class="label">크레아틴</div>
+<select id="crea-sel"></select>
+<div class="row" style="margin-top:8px"><input id="crea-g" type="number" placeholder="한 스쿱 g"/><input id="crea-n" type="number" placeholder="스쿱 수"/></div>
+<button class="go" type="button" onclick="addBag()">목록에 추가</button>
+<div class="bag" id="bag-crea"></div>
+<button class="go" type="button" onclick="calc()">권장량과 비교</button>
+<div class="out" id="o-crea"><div class="big" id="crea-big"></div><p class="note" id="crea-note"></p></div>
+</div></div>
+<div id="p-boost" class="hide"><div class="card"><div class="label">부스터</div>
+<select id="boost-sel"></select>
+<div class="row" style="margin-top:8px"><input id="boost-mg" type="number" placeholder="한 스쿱 카페인 mg"/><input id="boost-n" type="number" placeholder="스쿱 수"/></div>
+<button class="go" type="button" onclick="addBag()">목록에 추가</button>
+<div class="bag" id="bag-boost"></div>
+<button class="go" type="button" onclick="calc()">권장량과 비교</button>
+<div class="out" id="o-boost"><div class="big" id="boost-big"></div><p class="note" id="boost-note"></p></div>
+</div></div>
+<p class="warn">추정입니다. 신장·심장 질환, 미성년, 임신, 카페인 과민은 전문가와 상의하세요. 부스터와 커피를 겹치지 마세요.</p>
+</div>
+<script>
+function startApp(){document.getElementById("splash").style.display="none"}
+let tab="prot",bag=[];
+const PRODS=[
+{k:"prot",name:"마이프로틴 임팩트 웨이",g:21},{k:"prot",name:"옵티멈 골드 스탠다드",g:24},
+{k:"prot",name:"컴뱃 웨이",g:25},{k:"prot",name:"신타-6",g:22},
+{k:"prot",name:"컴뱃 크런치",g:25},{k:"prot",name:"아이솔레이트 일반",g:27},
+{k:"prot",name:"카제인",g:24},{k:"prot",name:"식물성 피 프로틴",g:20},
+{k:"prot",name:"국내 편의점 프로틴",g:20},{k:"prot",name:"직접 입력",g:0},
+{k:"crea",name:"크레아틴 모노 5g",g:5},{k:"crea",name:"크레아틴 HCL",g:2},
+{k:"crea",name:"크레알칼린",g:1.5},{k:"crea",name:"직접 입력",g:0},
+{k:"boost",name:"C4 오리지널",mg:150},{k:"boost",name:"C4 얼티밋",mg:300},
+{k:"boost",name:"고 와일드",mg:200},{k:"boost",name:"펌프 무카페인",mg:0},
+{k:"boost",name:"국내 부스터 일반",mg:200},{k:"boost",name:"커피 아메리카노",mg:150},
+{k:"boost",name:"직접 입력",mg:0}
+];
+function fillSel(){
+  [["prot-sel","prot"],["crea-sel","crea"],["boost-sel","boost"]].forEach(([id,k])=>{
+    const el=document.getElementById(id);
+    el.innerHTML=PRODS.filter(p=>p.k===k).map((p,i)=>"<option value='"+PRODS.indexOf(p)+"'>"+p.name+"</option>").join("");
+  });
+}
+fillSel();
+function wv(){return 1}
+function applyTheme(){const fg=localStorage.getItem("fg")||"#262626",ac=localStorage.getItem("accent")||"#262626",veil=localStorage.getItem("veil")||"78";document.documentElement.style.setProperty("--fg",fg);document.documentElement.style.setProperty("--accent",ac);document.documentElement.style.setProperty("--veil","rgba(255,255,255,"+(veil/100)+")");document.documentElement.style.setProperty("--shot",localStorage.getItem("bg-"+tab)||"none")}
+function openMenu(){document.getElementById("menu-box").classList.remove("hide");document.getElementById("dim").classList.add("on");backMenu()}
+function closeMenu(){document.getElementById("menu-box").classList.add("hide");document.getElementById("dim").classList.remove("on");backMenu()}
+const PANES=["help","hist","theme","tip"];
+function openPane(id){document.getElementById("menu-list").classList.add("hide");PANES.forEach(p=>document.getElementById("pane-"+p).classList.add("hide"));document.getElementById("pane-"+id).classList.remove("hide");if(id==="hist")renderHist()}
+function backMenu(){document.getElementById("menu-list").classList.remove("hide");PANES.forEach(p=>document.getElementById("pane-"+p).classList.add("hide"))}
+function goTab(t){document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.t===t));tab=t;["prot","crea","boost"].forEach(k=>document.getElementById("p-"+k).classList.toggle("hide",tab!==k));applyTheme();drawBag();if(document.getElementById("p-list").innerHTML)findProd()}
+function pickProd(i){
+  const p=PRODS[i];goTab(p.k);
+  if(p.k==="prot"){document.getElementById("prot-sel").value=String(i);document.getElementById("prot-g").value=p.g||"";document.getElementById("prot-n").value=""}
+  if(p.k==="crea"){document.getElementById("crea-sel").value=String(i);document.getElementById("crea-g").value=p.g||"";document.getElementById("crea-n").value=""}
+  if(p.k==="boost"){document.getElementById("boost-sel").value=String(i);document.getElementById("boost-mg").value=p.mg||"";document.getElementById("boost-n").value=""}
+  document.getElementById("p-list").innerHTML="<p class='note'>채움: "+p.name+" · 스쿱 수를 적고 목록에 추가</p>";
+}
+function findProd(){const q=(document.getElementById("p-q").value||"").trim();const hit=PRODS.map((p,i)=>({p,i})).filter(x=>x.p.k===tab&&(!q||x.p.name.includes(q)));document.getElementById("p-list").innerHTML=hit.length?hit.map(x=>"<button class='menu-item' type='button' onclick='pickProd("+x.i+")'>"+x.p.name+"</button>").join(""):"<p class='note'>없으면 직접 입력</p>"}
+function addBag(){
+  if(tab==="prot"){
+    const name=document.getElementById("prot-sel").selectedOptions[0].text;
+    const g=+document.getElementById("prot-g").value||0,n=+document.getElementById("prot-n").value||0;
+    if(!g||!n){alert("한 스쿱 g과 스쿱 수를 적으세요");return}
+    bag.push({k:"prot",name,g,n});
+  }else if(tab==="crea"){
+    const name=document.getElementById("crea-sel").selectedOptions[0].text;
+    const g=+document.getElementById("crea-g").value||0,n=+document.getElementById("crea-n").value||0;
+    if(!g||!n){alert("한 스쿱 g과 스쿱 수를 적으세요");return}
+    bag.push({k:"crea",name,g,n});
+  }else{
+    const name=document.getElementById("boost-sel").selectedOptions[0].text;
+    const mg=+document.getElementById("boost-mg").value||0,n=+document.getElementById("boost-n").value||0;
+    if(!n){alert("스쿱 수를 적으세요");return}
+    bag.push({k:"boost",name,mg,n});
+  }
+  drawBag();
+}
+function drawBag(){
+  const box=document.getElementById("bag-"+tab);if(!box)return;
+  const now=bag.filter(x=>x.k===tab);
+  box.innerHTML=now.length?now.map((x,i)=>{
+    let t=x.name+" ×"+x.n;
+    if(x.g)t+=" ("+(x.g*x.n)+"g)";
+    if(x.mg!=null&&x.k==="boost")t+=" ("+(x.mg*x.n)+"mg)";
+    return "<p>"+t+"<button type='button' onclick='delBag("+i+")'>삭제</button></p>";
+  }).join(""):"<p class='note'>목록이 없습니다. 스쿱 수를 적고 추가하세요.</p>";
+}
+function delBag(i){const now=bag.filter(x=>x.k===tab);bag=bag.filter(x=>x!==now[i]);drawBag()}
+function loadHist(){try{return JSON.parse(localStorage.getItem("gym-hist")||"[]")}catch(e){return[]}}
+function saveHist(text){const a=loadHist();a.unshift({t:Date.now(),text});localStorage.setItem("gym-hist",JSON.stringify(a.slice(0,30)))}
+function renderHist(){const arr=loadHist(),box=document.getElementById("hist-list");if(!arr.length){box.innerHTML="<p>아직 없습니다.</p>";return}box.innerHTML=arr.map(x=>{const d=new Date(x.t);return "<p>"+(d.getMonth()+1)+"/"+d.getDate()+" "+x.text+"</p>"}).join("")}
+function clearHist(){localStorage.removeItem("gym-hist");renderHist()}
+document.getElementById("menu").onclick=()=>{const box=document.getElementById("menu-box");if(box.classList.contains("hide"))openMenu();else closeMenu()};
+document.getElementById("opt-fg").oninput=e=>{localStorage.setItem("fg",e.target.value);applyTheme()};
+document.getElementById("opt-accent").oninput=e=>{localStorage.setItem("accent",e.target.value);applyTheme()};
+document.getElementById("opt-veil").oninput=e=>{localStorage.setItem("veil",e.target.value);applyTheme()};
+function compressImg(file,done){const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{const max=900,s=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);done(c.toDataURL("image/jpeg",0.7))};img.onerror=()=>done(null);img.src=url}
+document.getElementById("opt-img").onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;compressImg(f,data=>{try{localStorage.setItem("bg-"+tab,"url("+JSON.stringify(data)+")");applyTheme()}catch(err){alert("사진이 큽니다")}})};
+function resetTheme(){["fg","accent","veil","bg-prot","bg-crea","bg-boost"].forEach(k=>localStorage.removeItem(k));applyTheme()}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>goTab(b.dataset.t));
+document.getElementById("prot-sel").onchange=e=>{const p=PRODS[+e.target.value];if(p&&p.g)document.getElementById("prot-g").value=p.g};
+document.getElementById("crea-sel").onchange=e=>{const p=PRODS[+e.target.value];if(p&&p.g)document.getElementById("crea-g").value=p.g};
+document.getElementById("boost-sel").onchange=e=>{const p=PRODS[+e.target.value];if(p)document.getElementById("boost-mg").value=p.mg||""};
+applyTheme();drawBag();
+function calc(){
+  const w=+document.getElementById("weight").value;
+  if(!w){alert("체중을 적으세요");return}
+  const smm=+document.getElementById("smm").value||0,tbw=+document.getElementById("tbw").value||0,h=+document.getElementById("height").value||0;
+  const goal=document.getElementById("goal").value;
+  const pr=goal==="cut"?[2.0,2.4]:[1.6,2.2];
+  const needP1=w*pr[0],needP2=w*pr[1];
+  const takeP=bag.filter(x=>x.k==="prot").reduce((s,x)=>s+x.g*x.n,0);
+  const needC=Math.min(5,Math.max(3,w*0.03)),loadC=w*0.3;
+  const takeC=bag.filter(x=>x.k==="crea").reduce((s,x)=>s+x.g*x.n,0);
+  const needB1=w*3,needB2=Math.min(400,w*6);
+  const takeB=bag.filter(x=>x.k==="boost").reduce((s,x)=>s+x.mg*x.n,0);
+  document.getElementById("prot-big").textContent="권장 "+needP1.toFixed(0)+"~"+needP2.toFixed(0)+"g";
+  document.getElementById("prot-note").textContent="지금 목록 "+takeP+"g."+(smm?" 골격근 참고 "+(smm*2.8).toFixed(0)+"~"+(smm*3.5).toFixed(0)+"g.":"")+" 하루 식단 단백질과 합쳐서 보세요.";
+  document.getElementById("crea-big").textContent="유지 "+needC.toFixed(1)+"g";
+  document.getElementById("crea-note").textContent="지금 목록 "+takeC+"g. 선택 로딩 "+loadC.toFixed(1)+"g/일 × 5~7일. 물과 같이.";
+  document.getElementById("boost-big").textContent="카페인 "+Math.round(needB1)+"~"+Math.round(needB2)+"mg";
+  document.getElementById("boost-note").textContent="지금 목록 "+takeB+"mg. 운동 30~60분 전. 하루 총 400mg을 넘기지 마세요.";
+  ["o-prot","o-crea","o-boost"].forEach(id=>document.getElementById(id).style.display="block");
+  let extra="";
+  if(tbw){const low=document.getElementById("sex").value==="f"?50:55;if(tbw<low)extra=" 체수분이 낮은 편이면 물을 먼저."}
+  if(h)extra+=" BMI "+(w/((h/100)*(h/100))).toFixed(1)+".";
+  saveHist("P "+takeP+"g / C "+takeC+"g / B "+takeB+"mg");
+}
+</script>
+</body>
+</html>
