@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="헬스 복용량"/>
+<title>헬스 복용량</title>
+<style>
+:root{--fg:#262626;--muted:#8e8e8e;--line:#dbdbdb;--accent:#262626;--veil:rgba(255,255,255,.78);--shot:none}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;background:#fff;color:var(--fg)}
+.wrap{max-width:470px;margin:0 auto;min-height:100dvh;padding:14px 16px 32px}
+h1{font-size:22px;font-weight:650}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 14px;text-align:center;line-height:1.45}
+.tabs{display:flex;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;padding:8px 2px 10px;border:0;background:none;color:var(--muted);font:inherit;font-weight:600;font-size:13px;position:relative}
+.tabs button.on{color:var(--fg)}
+.tabs button.on:after{content:"";position:absolute;left:16%;right:16%;bottom:0;height:2px;background:var(--fg)}
+.card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px;background:#fff var(--shot) center/cover no-repeat;position:relative;overflow:hidden}
+.card:before{content:"";position:absolute;inset:0;background:var(--veil);pointer-events:none}
+.card>*{position:relative;z-index:1}
+.label{font-size:12px;color:var(--muted);font-weight:600;margin:10px 0 6px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+input,select{width:100%;background:#fff;border:1px solid var(--line);border-radius:8px;padding:11px 12px;color:var(--fg);font:inherit}
+.go{width:100%;margin-top:12px;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:700}
+.out{display:none}
+.big{font-size:22px;font-weight:700;margin:6px 0}
+.note{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6}
+.warn{margin-top:14px;padding:10px 12px;border-radius:8px;background:#fff0f1;color:#ed4956;font-size:12px;font-weight:700;line-height:1.4}
+.hide{display:none!important}
+.menu-item{width:100%;text-align:left;padding:16px 8px;border:0;border-bottom:1px solid #f0f0f0;background:none;color:var(--fg);font:inherit;font-size:16px;font-weight:600}
+.back{border:0;background:none;color:var(--fg);font:inherit;font-weight:600;padding:0 0 10px}
+.tip h3{font-size:15px;margin:14px 0 6px}
+.tip p{font-size:13px;color:var(--muted);line-height:1.65;margin:0 0 8px}
+.theme-row{display:flex;align-items:center;justify-content:space-between;margin:12px 0}
+.swatch{width:36px;height:36px;border-radius:8px;border:1px solid var(--line);overflow:hidden}
+.swatch input[type=color]{width:48px;height:48px;border:0;transform:translate(-6px,-6px)}
+.topbar{display:flex;align-items:center;position:relative;min-height:36px}
+.topbar h1{position:absolute;left:0;right:0;text-align:center;pointer-events:none}
+.topbar .ico{width:40px;height:36px;flex:0 0 40px;border:0;background:none;font-size:22px;color:var(--fg);z-index:1}
+.topbar .ico:last-child{margin-left:auto}
+.bag p{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
+.bag button{border:0;background:none;color:#ed4956;font:inherit}
+#splash{position:fixed;inset:0;background:#fff;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+#splash h2{font-size:32px}
+#splash p{color:#8e8e8e;margin:10px 0 28px;line-height:1.5}
+#splash .go{max-width:280px;background:#111}
+#dim{display:none;position:fixed;inset:0;z-index:40;background:rgba(255,255,255,.28);backdrop-filter:blur(10px)}
+#dim.on{display:block}
+#menu-box{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;margin:0!important;border-radius:0 16px 16px 0;z-index:45;overflow:auto;background:#fff}
+</style>
+</head>
+<body>
+<div id="splash"><h2>Gym Dose</h2><p>protein · creatine · booster · food</p><button class="go" type="button" onclick="document.getElementById('splash').style.display='none'">시작하기</button></div>
+<div id="dim" onclick="closeMenu()"></div>
+<div class="wrap">
+<div class="topbar">
+<button type="button" id="menu" class="ico">☰</button>
+<h1>헬스 복용량</h1>
+<button type="button" class="ico" onclick="openMenu();openPane('help')">?</button>
+</div>
+<p class="sub">체중·근성장·운동량 추정. 진료용이 아닙니다.</p>
+<div id="menu-box" class="card hide">
+<div id="menu-list">
+<button class="menu-item" type="button" onclick="openPane('help')">사용 방법</button>
+<button class="menu-item" type="button" onclick="openPane('body')">체성분 기록</button>
+<button class="menu-item" type="button" onclick="openPane('hist')">계산 기록</button>
+<button class="menu-item" type="button" onclick="openPane('theme')">꾸미기</button>
+<button class="menu-item" type="button" onclick="openPane('tip')">섭취 도움</button>
+</div>
+<div id="pane-help" class="hide tip"><button class="back" type="button" onclick="backMenu()">← 메뉴</button>
+<h3>사용 방법</h3>
+<p>체중만 적으면 권장량이 나옵니다. 프로틴·식품 탭에서 고른 뒤 개수/스쿱을 적고 목록에 추가하면 하루 단백질에 합쳐집니다. 체성분은 ☰에 기록합니다.</p></div>
+<div id="pane-body" class="hide tip"><button class="back" type="button" onclick="backMenu()">← 메뉴</button>
+<h3>체성분 기록</h3>
+<input id="log-smm" type="number" placeholder="골격근 kg"/>
+<input id="log-tbw" type="number" placeholder="체수분 %" style="margin-top:8px"/>
+<input id="log-bf" type="number" placeholder="체지방 %" style="margin-top:8px"/>
+<button class="go" type="button" onclick="saveBody()">기록 저장</button>
+<p class="note" id="body-saved"></p></div>
+<div id="pane-hist" class="hide tip"><button class="back" type="button" onclick="backMenu()">← 메뉴</button><h3>기록</h3><div id="hist-list"></div><button class="go" type="button" onclick="localStorage.removeItem('gym-hist');renderHist()">지우기</button></div>
+<div id="pane-theme" class="hide"><button class="back" type="button" onclick="backMenu()">← 메뉴</button>
+<div class="theme-row"><span>글자색</span><label class="swatch"><input id="opt-fg" type="color" value="#262626"/></label></div>
+<div class="theme-row"><span>버튼색</span><label class="swatch"><input id="opt-accent" type="color" value="#262626"/></label></div>
+<div class="label">투명도</div><input id="opt-veil" type="range" min="30" max="95" value="78"/>
+<input id="opt-img" type="file" accept="image/*"/>
+<button class="go" type="button" onclick="resetTheme()">초기화</button></div>
+<div id="pane-tip" class="hide tip"><button class="back" type="button" onclick="backMenu()">← 메뉴</button>
+<p>크레아틴 물은 체중×40ml + 500ml. 식품 g은 100g 또는 1개 대표값입니다.</p></div>
+</div>
+<div class="tabs">
+<button class="on" data-t="prot">프로틴</button>
+<button data-t="crea">크레아틴</button>
+<button data-t="boost">부스터</button>
+<button data-t="food">식품</button>
+</div>
+<div class="card"><div class="label">제품 찾기</div>
+<div class="row"><input id="p-q" placeholder="이 탭만 검색"/><button class="go" type="button" style="margin-top:0;flex:0 0 72px" onclick="findProd()">검색</button></div>
+<div id="p-list"></div></div>
+<div class="card">
+<div class="label">체중 · 가중치</div>
+<div class="row"><select id="sex"><option value="m">남성</option><option value="f">여성</option></select>
+<input id="weight" type="number" placeholder="체중 kg"/></div>
+<div class="label">근성장 목표</div>
+<input id="w-grow" type="range" min="70" max="130" value="100"/>
+<p class="note" id="grow-lab">보통</p>
+<div class="label">운동량</div>
+<input id="w-vol" type="range" min="70" max="130" value="100"/>
+<p class="note" id="vol-lab">보통</p>
+</div>
+<div class="card out" id="o-live">
+<div class="label">권장</div>
+<div class="big" id="live-p"></div><p class="note" id="live-pn"></p>
+<div class="big" id="live-c"></div><p class="note" id="live-cn"></p>
+<div class="big" id="live-w"></div><p class="note" id="live-wn"></p>
+<div class="big" id="live-b"></div><p class="note" id="live-bn"></p>
+</div>
+<div id="p-prot"><div class="card"><div class="label">프로틴</div>
+<select id="prot-sel"></select>
+<div class="row" style="margin-top:8px"><input id="prot-g" type="number" placeholder="한 스쿱 단백질 g"/><input id="prot-n" type="number" placeholder="스쿱 수"/></div>
+<button class="go" type="button" onclick="addBag()">목록에 추가</button>
+<div class="bag" id="bag-prot"></div></div></div>
+<div id="p-crea" class="hide"><div class="card"><div class="label">크레아틴</div>
+<select id="crea-sel"></select>
+<div class="row" style="margin-top:8px"><input id="crea-g" type="number" placeholder="한 스쿱 g"/><input id="crea-n" type="number" placeholder="스쿱 수"/></div>
+<button class="go" type="button" onclick="addBag()">목록에 추가</button>
+<div class="bag" id="bag-crea"></div></div></div>
+<div id="p-boost" class="hide"><div class="card"><div class="label">부스터</div>
+<select id="boost-sel"></select>
+<div class="row" style="margin-top:8px"><input id="boost-mg" type="number" placeholder="한 스쿱 카페인 mg"/><input id="boost-n" type="number" placeholder="스쿱 수"/></div>
+<button class="go" type="button" onclick="addBag()">목록에 추가</button>
+<div class="bag" id="bag-boost"></div></div></div>
+<div id="p-food" class="hide"><div class="card"><div class="label">식품</div>
+<select id="food-sel"></select>
+<div class="row" style="margin-top:8px"><input id="food-g" type="number" placeholder="1개 단백질 g"/><input id="food-n" type="number" placeholder="개수"/></div>
+<button class="go" type="button" onclick="addBag()">목록에 추가</button>
+<div class="bag" id="bag-food"></div></div></div>
+<p class="warn">추정입니다. 라벨과 다르면 숫자를 고치세요.</p>
+</div>
+<script>
+let tab="prot",bag=[];
+const PRODS=[
+{k:"prot",name:"마이프로틴 임팩트 웨이",g:21},{k:"prot",name:"마이프로틴 아이솔레이트",g:23},
+{k:"prot",name:"마이프로틴 클리어 웨이",g:20},{k:"prot",name:"마이프로틴 카제인",g:24},
+{k:"prot",name:"옵티멈 골드 스탠다드",g:24},{k:"prot",name:"옵티멈 아이솔레이트",g:25},
+{k:"prot",name:"디마타이즈 ISO100",g:25},{k:"prot",name:"컴뱃 웨이",g:25},
+{k:"prot",name:"신타-6",g:22},{k:"prot",name:"머슬테크 니트로테크",g:30},
+{k:"prot",name:"칼로바이 프로틴",g:20},{k:"prot",name:"닥터유 프로틴",g:20},
+{k:"prot",name:"hy 프로틴",g:15},{k:"prot",name:"매일 프로틴",g:20},
+{k:"prot",name:"서울우유 프로틴",g:20},{k:"prot",name:"빙그레 프로틴",g:20},
+{k:"prot",name:"밀라이트 프로틴",g:20},{k:"prot",name:"워너랩 프로틴",g:20},
+{k:"prot",name:"바디원 프로틴",g:25},{k:"prot",name:"아이언팩토리 프로틴",g:24},
+{k:"prot",name:"직접 입력",g:0},
+{k:"crea",name:"마이프로틴 크레아틴 모노",g:5},{k:"crea",name:"옵티멈 크레아틴",g:5},
+{k:"crea",name:"컴뱃 크레아틴",g:5},{k:"crea",name:"크레퓨어 5g",g:5},
+{k:"crea",name:"뉴트리코스트 크레아틴",g:5},{k:"crea",name:"칼로바이 크레아틴",g:5},
+{k:"crea",name:"크레아틴 HCL",g:2},{k:"crea",name:"직접 입력",g:0},
+{k:"boost",name:"C4 오리지널",mg:150},{k:"boost",name:"C4 얼티밋",mg:300},
+{k:"boost",name:"고 와일드",mg:200},{k:"boost",name:"국내 부스터 일반",mg:200},
+{k:"boost",name:"커피 아메리카노",mg:150},{k:"boost",name:"직접 입력",mg:0},
+{k:"food",name:"허닭 닭가슴살 100g",g:23},{k:"food",name:"아임닭 닭가슴살 100g",g:23},
+{k:"food",name:"잇메이트 닭가슴살 100g",g:24},{k:"food",name:"굽네 닭가슴살 100g",g:23},
+{k:"food",name:"하림 닭가슴살 100g",g:23},{k:"food",name:"마니커 닭가슴살 100g",g:23},
+{k:"food",name:"곰곰 닭가슴살 100g",g:23},{k:"food",name:"러브잇 닭가슴살",g:22},
+{k:"food",name:"훈제 닭가슴살 100g",g:25},{k:"food",name:"닭가슴살 소시지",g:16},
+{k:"food",name:"계란 1개",g:6},{k:"food",name:"참치캔 100g",g:25},
+{k:"food",name:"그릭요거트 100g",g:10},{k:"food",name:"소고기 우둔 100g",g:21},
+{k:"food",name:"연어 100g",g:20},{k:"food",name:"직접 입력",g:0}
+];
+function fillSel(){[["prot-sel","prot"],["crea-sel","crea"],["boost-sel","boost"],["food-sel","food"]].forEach(([id,k])=>{document.getElementById(id).innerHTML=PRODS.map((p,i)=>p.k===k?"<option value='"+i+"'>"+p.name+"</option>":"").join("")})}
+fillSel();
+function applyTheme(){const fg=localStorage.getItem("fg")||"#262626",ac=localStorage.getItem("accent")||"#262626",veil=localStorage.getItem("veil")||"78";document.documentElement.style.setProperty("--fg",fg);document.documentElement.style.setProperty("--accent",ac);document.documentElement.style.setProperty("--veil","rgba(255,255,255,"+(veil/100)+")");document.documentElement.style.setProperty("--shot",localStorage.getItem("bg-"+tab)||"none")}
+function openMenu(){document.getElementById("menu-box").classList.remove("hide");document.getElementById("dim").classList.add("on");backMenu()}
+function closeMenu(){document.getElementById("menu-box").classList.add("hide");document.getElementById("dim").classList.remove("on");backMenu()}
+const PANES=["help","body","hist","theme","tip"];
+function openPane(id){document.getElementById("menu-list").classList.add("hide");PANES.forEach(p=>document.getElementById("pane-"+p).classList.add("hide"));document.getElementById("pane-"+id).classList.remove("hide");if(id==="hist")renderHist();if(id==="body")loadBody()}
+function backMenu(){document.getElementById("menu-list").classList.remove("hide");PANES.forEach(p=>document.getElementById("pane-"+p).classList.add("hide"))}
+function saveBody(){["log-smm","log-tbw","log-bf"].forEach(id=>localStorage.setItem(id,document.getElementById(id).value||""));document.getElementById("body-saved").textContent="저장됨";calc()}
+function loadBody(){["log-smm","log-tbw","log-bf"].forEach(id=>document.getElementById(id).value=localStorage.getItem(id)||"")}
+function goTab(t){document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.t===t));tab=t;["prot","crea","boost","food"].forEach(k=>document.getElementById("p-"+k).classList.toggle("hide",tab!==k));applyTheme();drawBag()}
+function pickProd(i){const p=PRODS[i];goTab(p.k);
+  if(p.k==="prot"){document.getElementById("prot-sel").value=i;document.getElementById("prot-g").value=p.g||"";document.getElementById("prot-n").value=""}
+  if(p.k==="crea"){document.getElementById("crea-sel").value=i;document.getElementById("crea-g").value=p.g||"";document.getElementById("crea-n").value=""}
+  if(p.k==="boost"){document.getElementById("boost-sel").value=i;document.getElementById("boost-mg").value=p.mg||"";document.getElementById("boost-n").value=""}
+  if(p.k==="food"){document.getElementById("food-sel").value=i;document.getElementById("food-g").value=p.g||"";document.getElementById("food-n").value=""}
+  document.getElementById("p-list").innerHTML="<p class='note'>채움: "+p.name+" · 개수/스쿱을 적고 추가</p>"}
+function findProd(){const q=(document.getElementById("p-q").value||"").trim();const hit=PRODS.map((p,i)=>({p,i})).filter(x=>x.p.k===tab&&(!q||x.p.name.includes(q)));document.getElementById("p-list").innerHTML=hit.map(x=>"<button class='menu-item' type='button' onclick='pickProd("+x.i+")'>"+x.p.name+"</button>").join("")||"<p class='note'>없음</p>"}
+function addBag(){
+  if(tab==="prot"){const g=+document.getElementById("prot-g").value||0,n=+document.getElementById("prot-n").value||0;if(!g||!n){alert("g과 스쿱");return}bag.push({k:"prot",name:document.getElementById("prot-sel").selectedOptions[0].text,g,n})}
+  else if(tab==="crea"){const g=+document.getElementById("crea-g").value||0,n=+document.getElementById("crea-n").value||0;if(!g||!n){alert("g과 스쿱");return}bag.push({k:"crea",name:document.getElementById("crea-sel").selectedOptions[0].text,g,n})}
+  else if(tab==="boost"){const mg=+document.getElementById("boost-mg").value||0,n=+document.getElementById("boost-n").value||0;if(!n){alert("스쿱");return}bag.push({k:"boost",name:document.getElementById("boost-sel").selectedOptions[0].text,mg,n})}
+  else{const g=+document.getElementById("food-g").value||0,n=+document.getElementById("food-n").value||0;if(!g||!n){alert("g과 개수");return}bag.push({k:"food",name:document.getElementById("food-sel").selectedOptions[0].text,g,n})}
+  drawBag();calc();
+}
+function drawBag(){const box=document.getElementById("bag-"+tab);const now=bag.filter(x=>x.k===tab);box.innerHTML=now.length?now.map((x,i)=>"<p>"+x.name+" ×"+x.n+"<button type='button' onclick='delBag("+i+")'>삭제</button></p>").join(""):"<p class='note'>목록 없음</p>"}
+function delBag(i){const now=bag.filter(x=>x.k===tab);bag=bag.filter(x=>x!==now[i]);drawBag();calc()}
+function renderHist(){const a=JSON.parse(localStorage.getItem("gym-hist")||"[]");document.getElementById("hist-list").innerHTML=a.length?a.map(x=>"<p>"+x+"</p>").join(""):"<p>없음</p>"}
+document.getElementById("menu").onclick=()=>{const b=document.getElementById("menu-box");b.classList.contains("hide")?openMenu():closeMenu()};
+document.getElementById("opt-fg").oninput=e=>{localStorage.setItem("fg",e.target.value);applyTheme()};
+document.getElementById("opt-accent").oninput=e=>{localStorage.setItem("accent",e.target.value);applyTheme()};
+document.getElementById("opt-veil").oninput=e=>{localStorage.setItem("veil",e.target.value);applyTheme()};
+document.getElementById("opt-img").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{localStorage.setItem("bg-"+tab,"url("+JSON.stringify(r.result)+")");applyTheme()}catch(err){alert("사진 큼")}};r.readAsDataURL(f)};
+function resetTheme(){["fg","accent","veil","bg-prot","bg-crea","bg-boost","bg-food"].forEach(k=>localStorage.removeItem(k));applyTheme()}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>goTab(b.dataset.t));
+document.getElementById("prot-sel").onchange=e=>{const p=PRODS[+e.target.value];if(p.g)document.getElementById("prot-g").value=p.g};
+document.getElementById("crea-sel").onchange=e=>{const p=PRODS[+e.target.value];if(p.g)document.getElementById("crea-g").value=p.g};
+document.getElementById("boost-sel").onchange=e=>{const p=PRODS[+e.target.value];document.getElementById("boost-mg").value=p.mg||""};
+document.getElementById("food-sel").onchange=e=>{const p=PRODS[+e.target.value];if(p.g)document.getElementById("food-g").value=p.g};
+function lab(){const g=+document.getElementById("w-grow").value,v=+document.getElementById("w-vol").value;document.getElementById("grow-lab").textContent=g<90?"낮음":g>110?"높음":"보통";document.getElementById("vol-lab").textContent=v<90?"적음":v>110?"많음":"보통"}
+function calc(){
+  lab();
+  const w=+document.getElementById("weight").value,box=document.getElementById("o-live");
+  if(!w){box.style.display="none";return}
+  const gf=+document.getElementById("w-grow").value/100,vf=+document.getElementById("w-vol").value/100;
+  const p1=w*1.6*gf*vf,p2=w*2.2*gf*vf;
+  const cre=Math.min(7,Math.max(3,w*0.03)*gf*Math.sqrt(vf));
+  const waterL=w*0.04+0.5;
+  const b1=Math.min(400,w*3*vf),b2=Math.min(400,w*6*vf);
+  const takeP=bag.filter(x=>x.k==="prot"||x.k==="food").reduce((s,x)=>s+x.g*x.n,0);
+  const takeC=bag.filter(x=>x.k==="crea").reduce((s,x)=>s+x.g*x.n,0);
+  const takeB=bag.filter(x=>x.k==="boost").reduce((s,x)=>s+x.mg*x.n,0);
+  document.getElementById("live-p").textContent="단백질 "+p1.toFixed(0)+"~"+p2.toFixed(0)+" g";
+  document.getElementById("live-pn").textContent="파우더+식품 목록 "+takeP+"g. 식단 전체와 비교하세요.";
+  document.getElementById("live-c").textContent="크레아틴 "+cre.toFixed(1)+" g";
+  document.getElementById("live-cn").textContent="목록 "+takeC+"g. 선택 로딩 "+(w*0.3).toFixed(1)+"g × 5~7일.";
+  document.getElementById("live-w").textContent="물 약 "+waterL.toFixed(1)+" L";
+  document.getElementById("live-wn").textContent="크레아틴 쓸 때 체중×40ml + 500ml를 나눠 마시세요.";
+  document.getElementById("live-b").textContent="카페인 "+Math.round(b1)+"~"+Math.round(b2)+" mg";
+  document.getElementById("live-bn").textContent="목록 "+takeB+"mg. 하루 400mg 이하.";
+  box.style.display="block";
+}
+["weight","sex","w-grow","w-vol"].forEach(id=>{const el=document.getElementById(id);el.addEventListener("input",calc);el.addEventListener("change",calc)});
+applyTheme();drawBag();calc();
+</script>
+</body>
+</html>
